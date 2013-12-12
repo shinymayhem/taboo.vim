@@ -12,8 +12,6 @@ CONTENTS                                                      *taboo-contents*
     2. Installation ..........................|taboo-installation|
     3. Commands ..............................|taboo-commands|
     4. Options ...............................|taboo-options|
-        4.1 General behaviour ................|taboo-behaviour|
-        4.2 Tabs UI options ..................|taboo-tabs-ui|
     5. Changelog .............................|taboo-changelog| 
     6. Contributors ..........................|taboo-ontributors|
 
@@ -42,9 +40,15 @@ directory or use plugin managers such as Vundle or Pathogen.
 NOTE: tabs look different in terminal vim than in gui versions. If you wish
 having terminal style tabs even in gui versions you have to add the following
 line to your .vimrc file:  
-
+>
     set guioptions-=e
+<
 
+Taboo is able to remeber custom tab labels when you save the current session
+but you are required to set the following option in your .vimrc file 
+>
+    set sessionoptions+=tabpages,globals
+<
 
 ==============================================================================
 3. Commands                                                   *taboo-commands*
@@ -70,19 +74,15 @@ To reset the tab name to its original name.
 4. Options                                                     *taboo-options*
 
 
-______________________________________________________________________________
-4.1 General behaviour
+                                                      *g:taboo_open_empty_tab* 
 
-g:taboo_open_empty_tab                                *g:taboo_open_empty_tab* 
 If you set this option to 0, whenever you open a new tab Taboo will try to 
 it with the current buffer
 
 default: 1
 
-______________________________________________________________________________
-4.2 Tabs UI options
+                                                          *g:taboo_tab_format* 
 
-g:taboo_tab_format                                        *g:taboo_tab_format* 
 With this option you can customize the way normal tabs (not renamed tabs) are
 displayed. Below all the available items that can be used: 
 
@@ -90,7 +90,7 @@ displayed. Below all the available items that can be used:
    %f -> file name in normal tab
    %F -> path relative to $HOME
    %a -> absolute path
-   %[n]a -> custom level of path depth
+   %[n]a -> custom level of path depth (e.g. %2a)
 
    NOTE: in renamed tabs, the items %f, %F, %a and %[n]a will be avaluated to 
          the custom label associated to that tab.
@@ -106,27 +106,32 @@ displayed. Below all the available items that can be used:
 default: " %f%m "
 
 
-g:taboo_renamed_tab_format                        *g:taboo_renamed_tab_format* 
+                                                  *g:taboo_renamed_tab_format* 
+
 Same as |g:taboo_format| but for renamed tabs.
 
 default: " [%f]%m "
 
 
-6:taboo_modified_tab_flag                          *g:taboo_modified_tab_flag* 
-Set this option if you prefer a different string for the modified flag.
+                                                   *g:taboo_modified_tab_flag* 
+
+This option controls how the modified flag looks like.
 
 default: "*"
 
 
-g:taboo_close_tabs_label                            *g:taboo_close_tabs_label* 
-Set this option if you want a flag on the tabline who close the tabline itself 
-when clicked. The flag will appear at the right side of the tabline. This 
-position is fixed. When the value is an empty string nothing will be displaed.
+                                                    *g:taboo_close_tabs_label* 
 
-default: ''
+Set this option if you want a flag on the tabline for closing the tabline
+itself when clicked. The flag will appear at the right side of the tabline.
+This position is fixed. When the value is an empty string nothing will be
+displayed.
+
+default: ""
 
 
-g:taboo_unnamed_tab_label                          *g:taboo_unnamed_tab_label* 
+                                                   *g:taboo_unnamed_tab_label* 
+
 Set this option if you prefer a different name for tabs containing an unnamed
 buffer.
 

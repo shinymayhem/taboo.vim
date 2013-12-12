@@ -4,9 +4,12 @@ Taboo is a simple plugin that ease renaming vim tabs and customizing
 their appearance.
 
 
-### Installation
+### Requirements
 
-* Taboo requires Vim 7.3+.
+* Vim 7.3+
+
+
+### Installation
 
 You can either extract the content of the folder into the `$HOME/.vim`
 directory or use a plugin manager such as [Vundle](https://github.com/gmarik/vundle),
@@ -14,27 +17,29 @@ directory or use a plugin manager such as [Vundle](https://github.com/gmarik/vun
 
 **NOTE**: tabs look different in terminal vim than in gui versions. If you wish
 having terminal style tabs even in gui versions you have to add the following
-line to your .vimrc file:  
-
-```
+line to your .vimrc file 
+```vim
 set guioptions-=e
 ```
 
-### Commands
+Taboo is able to remeber custom tab labels when you save the current session
+but you are required to set the following option in your .vimrc file 
+```vim
+set sessionoptions+=tabpages,globals
+```
 
-Here all the available commands:
+
+### Commands
 
 * `TabooRename <name>`: Renames the current tab with the name provided.
 * `TabooOpen <name>`: Opens a new tab and and gives it the name provided. 
 * `TabooReset`: Removes the custom label associated with the current tab.
 
 
-### Basic settings
+### Basic options
 
-Here the most important available settings:
-
-* `g:taboo_tab_format`: With this option you can customize the way normal tabs (not
-  renamed tabs) are displayed. Below all the available items: 
+* `g:taboo_tab_format`: With this option you can customize the way normal tabs 
+  (not renamed tabs) look like. Below all the available items: 
 
     - `%f`: file name
     - `%F`: path relative to $HOME
@@ -47,10 +52,15 @@ Here the most important available settings:
 
     default: `%f%m` 
 
-    **NOTE**: in renamed tabs, the items `%f`, `%F`, `%a` and `%[n]a` will be evaluated to the custom label associated to that tab.
+    **NOTE**: in renamed tabs, the items `%f`, `%F`, `%a` and `%[n]a` will be 
+    evaluated to the custom label associated to that tab.
 
 * `g:taboo_renamed_tab_format`: Same as `g:taboo_tab_format` but for renamed tabs.
 
     default: `[%f]%m` 
 
-For other available settings type `:help taboo`
+* `g:taboo_modified_tab_flag`: This option controls how the modified flag looks like.
+
+    default: `*`
+
+For other options type `:help taboo`.
