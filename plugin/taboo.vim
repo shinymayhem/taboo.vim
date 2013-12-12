@@ -5,36 +5,28 @@
 " Url: https://github.com/gcmt/taboo.vim
 " License: MIT
 " Version: 1.4
-" Last Changed: May 12, 2013
+" Last Changed: 12/12/2013
 " =============================================================================
 
 
-" Init ------------------------------------------ {{{
+" INIT
+" =============================================================================
 
 if exists("g:loaded_taboo") || &cp || v:version < 703
     finish
 endif
 let g:loaded_taboo = 1
 
-" }}}
-
-" Initialize internal variables ------------------ {{{
-
-" wher custom tab names get stored (format: 'TABNUM\tTABNAME\n ...')
+" This variable is needed to remember custom tab names when a session is
+" saved and restored. String format: 'TABNUM\tTABNAME\nTABNUM\tTABNAME\n...'
 let g:Taboo_tabs = get(g:, "Taboo_tabs", "")
-
-" }}}
-
-" Initialize default settings ------------------- {{{
 
 let g:taboo_tab_format = get(g:, "taboo_tab_format", " %f%m ")
 let g:taboo_renamed_tab_format = get(g:, "taboo_renamed_tab_format", " [%f]%m ")
-let g:taboo_modified_tab_flag= get(g:, "taboo_modified_tab_flag", "*")
+let g:taboo_modified_tab_flag = get(g:, "taboo_modified_tab_flag", "*")
 let g:taboo_close_tabs_label = get(g:, "taboo_close_tabs_label", "")
 let g:taboo_unnamed_tab_label = get(g:, "taboo_unnamed_tab_label", "[no name]")
 let g:taboo_open_empty_tab = get(g:, "taboo_open_empty_tab", 1)
-
-" }}}
 
 
 " FUNCTIONS FOR CONSTRUCTING THE TABLINE
@@ -265,7 +257,7 @@ endfunction
 " HELPER FUNCTIONS
 " =============================================================================
 
-" tabs {{{
+" tabs ------------------------------------------ {{{
 function! s:tabs()
     return range(1, tabpagenr('$'))
 endfunction
@@ -274,6 +266,9 @@ endfunction
 " refresh_tabline ------------------------------- {{{
 function! s:refresh_tabline()
     if exists("g:SessionLoad")
+        " Do nothing if a session is loading. This ensure that custom tab names
+        " are correctly restored with s:restore_tabs(), which is triggered by
+        " the SessionLoadPost event.
         return
     endif
     let g:Taboo_tabs = ""
@@ -286,22 +281,16 @@ function! s:refresh_tabline()
 endfunction!
 " }}}
 
-" extract_tabs_from_str {{{
-function! s:extract_tabs_from_str(str)
-    let tabs = {}
-    let lines = split(a:str, "\n")
-    for ln in lines
-        let tokens = split(ln, "\t")
-        let tabs[tokens[0]] = tokens[1]
-    endfor
-    return tabs
-endfunction
-" }}}
-
-" restore_tabs {{{
+" restore_tabs ---------------------------------- {{{
 function! s:restore_tabs()
     if !empty(g:Taboo_tabs)
-        let tabs = s:extract_tabs_from_str(get(g:, "Taboo_tabs", ""))
+        let tabs = {}
+        " Load tab names from the Taboo_tabs variable
+        " Taboo_tabs format: 'TABNUM\tTABNAME\nTABNUM\tTABNAME\n...'
+        for rawtab in split(get(g:, "Taboo_tabs", ""), "\n")
+            let tabs[split(rawtab, "\t")[0]] = split(rawtab, "\t")[1]
+        endfor
+        " Set tab names
         for i in s:tabs()
             call settabvar(i, "taboo_tab_name", get(tabs, i, ""))
         endfor
