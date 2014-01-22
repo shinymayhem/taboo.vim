@@ -1,6 +1,10 @@
 
 # CHANGELOG
 
+v1.5
+
+	- Add support for Vim 7.2. 
+
 v1.4
 
 	- Add support for sessions. 

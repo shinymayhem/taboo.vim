@@ -12,7 +12,7 @@
 " INIT
 " =============================================================================
 
-if exists("g:loaded_taboo") || &cp || v:version < 703
+if exists("g:loaded_taboo") || &cp || v:version < 702
     finish
 endif
 let g:loaded_taboo = 1
@@ -41,7 +41,7 @@ function! TabooTabline()
 
     for i in s:tabs()
 
-        let label = gettabvar(i, "taboo_tab_name")
+        let label = s:GetTabVar(i, "taboo_tab_name")
         if empty(label)
             " not renamed tab
             let label_items = s:parse_fmt_str(g:taboo_tab_format)
@@ -68,7 +68,7 @@ endfunction
 " This is automatically called by Vim for each tab.
 function! TabooGuiLabel()
 
-    let label = gettabvar(v:lnum, "taboo_tab_name")
+    let label = s:GetTabVar(v:lnum, "taboo_tab_name")
     if empty(label)
         " not renamed tab
         let label_items = s:parse_fmt_str(g:taboo_tab_format)
@@ -178,7 +178,7 @@ function! s:expand_path(flag, tabnr, last_active_buf)
     let bn = bufname(a:last_active_buf)
     let fname = fnamemodify(bn, ':p:t')
     let basedir = fnamemodify(bn, ':p:h')
-    let label = gettabvar(a:tabnr, 'taboo_tab_name')
+    let label = s:GetTabVar(a:tabnr, 'taboo_tab_name')
 
     if empty(label)
         " not renamed tab
@@ -232,7 +232,7 @@ endfunction
 " rename tab ------------------------------------ {{{
 " To rename the current tab.
 function! s:RenameTab(label)
-    let t:taboo_tab_name = a:label
+    call s:SetTabVar(0, 'taboo_tab_name', a:label)
     call s:refresh_tabline()
 endfunction
 " }}}
@@ -248,7 +248,7 @@ endfunction
 " reset tab name -------------------------------- {{{
 " If the tab has been renamed the custom name is removed.
 function! s:ResetTabName()
-    let t:taboo_tab_name = ""
+    call s:SetTabVar(0, 'taboo_tab_name', "")
     call s:refresh_tabline()
 endfunction
 " }}}
@@ -273,8 +273,8 @@ function! s:refresh_tabline()
     endif
     let g:Taboo_tabs = ""
     for i in s:tabs()
-        if !empty(gettabvar(i, "taboo_tab_name"))
-            let g:Taboo_tabs .= i."\t".gettabvar(i, "taboo_tab_name")."\n"
+        if !empty(s:GetTabVar(i, "taboo_tab_name"))
+            let g:Taboo_tabs .= i."\t".s:GetTabVar(i, "taboo_tab_name")."\n"
         endif
     endfor
     exec "set showtabline=" . &showtabline
@@ -292,9 +292,47 @@ function! s:restore_tabs()
         endfor
         " Set tab names
         for i in s:tabs()
-            call settabvar(i, "taboo_tab_name", get(tabs, i, ""))
+            call s:SetTabVar(i, "taboo_tab_name", get(tabs, i, ""))
         endfor
     endif
+endfunction
+" }}}
+
+" set tab variable ------------------------------ {{{
+" Backwards compatibility function, settabvar not implemented until 7.2.438
+" Set a tabwinvar in each window in the tab
+function! s:SetTabVar(tab_number, variable_name, value)
+    "set for each window so tab_name doesn't change when switching windows
+    if a:tab_number ==? 0
+        for win_number in range(1, winnr('$'))
+            call setwinvar(win_number, a:variable_name, a:value)
+        endfor
+    else
+        for win_number in range(1, tabpagewinnr(a:tab_number, '$'))
+            call settabwinvar(a:tab_number, win_number, a:variable_name, a:value)
+        endfor
+    endif
+endfunction
+" }}}
+
+" get tab variable ------------------------------ {{{
+" Backwards compatibility function
+function! s:GetTabVar(tab_number, variable_name)
+    let win_number = 1
+    for win_number in range(1, tabpagewinnr(a:tab_number, '$'))
+        let var = gettabwinvar(a:tab_number, win_number, a:variable_name)
+        if !empty(var)
+            return var
+        endif
+    endfor
+endfunction
+" }}}
+
+" sync tab name --------------------------------- {{{
+" Make sure all windows have the taboo_tab_name 'tab variable'
+function! s:SyncTabName()
+    let tab_number = tabpagenr()
+    call s:SetTabVar(tab_number, 'taboo_tab_name', s:GetTabVar(tab_number, 'taboo_tab_name'))
 endfunction
 " }}}
 
@@ -314,6 +352,7 @@ augroup taboo
     au!
     au SessionLoadPost * call s:restore_tabs()
     au TabLeave,TabEnter * call s:refresh_tabline()
+    au BufCreate,BufLeave,BufEnter,WinLeave,WinEnter  * call s:SyncTabName()
     au VimEnter * set tabline=%!TabooTabline()
     au VimEnter * if has('gui_running')|set guitablabel=%!TabooGuiLabel()|endif
 augroup END
