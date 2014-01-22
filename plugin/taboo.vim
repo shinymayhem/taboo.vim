@@ -300,39 +300,25 @@ endfunction
 
 " set tab variable ------------------------------ {{{
 " Backwards compatibility function, settabvar not implemented until 7.2.438
-" Set a tabwinvar in each window in the tab
+" Use tab number prefixed global vars instead of tab vars
 function! s:SetTabVar(tab_number, variable_name, value)
-    "set for each window so tab_name doesn't change when switching windows
     if a:tab_number ==? 0
-        for win_number in range(1, winnr('$'))
-            call setwinvar(win_number, a:variable_name, a:value)
-        endfor
+        let tabnr = tabpagenr()
     else
-        for win_number in range(1, tabpagewinnr(a:tab_number, '$'))
-            call settabwinvar(a:tab_number, win_number, a:variable_name, a:value)
-        endfor
+        let tabnr = a:tab_number
     endif
+    let tvar = "t_".tabnr."_".a:variable_name
+    execute "let g:".tvar." = a:value"
 endfunction
 " }}}
 
 " get tab variable ------------------------------ {{{
 " Backwards compatibility function
+" Use tab number prefixed global vars instead of tab vars
 function! s:GetTabVar(tab_number, variable_name)
-    let win_number = 1
-    for win_number in range(1, tabpagewinnr(a:tab_number, '$'))
-        let var = gettabwinvar(a:tab_number, win_number, a:variable_name)
-        if !empty(var)
-            return var
-        endif
-    endfor
-endfunction
-" }}}
-
-" sync tab name --------------------------------- {{{
-" Make sure all windows have the taboo_tab_name 'tab variable'
-function! s:SyncTabName()
-    let tab_number = tabpagenr()
-    call s:SetTabVar(tab_number, 'taboo_tab_name', s:GetTabVar(tab_number, 'taboo_tab_name'))
+    let tvar = "t_".a:tab_number."_".a:variable_name
+    let var = get(g:, tvar, "")
+    return var
 endfunction
 " }}}
 
@@ -352,7 +338,6 @@ augroup taboo
     au!
     au SessionLoadPost * call s:restore_tabs()
     au TabLeave,TabEnter * call s:refresh_tabline()
-    au BufCreate,BufLeave,BufEnter,WinLeave,WinEnter  * call s:SyncTabName()
     au VimEnter * set tabline=%!TabooTabline()
     au VimEnter * if has('gui_running')|set guitablabel=%!TabooGuiLabel()|endif
 augroup END
