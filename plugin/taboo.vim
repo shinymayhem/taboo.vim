@@ -232,7 +232,7 @@ endfunction
 " rename tab ------------------------------------ {{{
 " To rename the current tab.
 function! s:RenameTab(label)
-    call s:SetTabVar(0, 'taboo_tab_name', a:label)
+    call s:SetTabVar(tabpagenr(), 'taboo_tab_name', a:label)
     call s:refresh_tabline()
 endfunction
 " }}}
@@ -248,7 +248,7 @@ endfunction
 " reset tab name -------------------------------- {{{
 " If the tab has been renamed the custom name is removed.
 function! s:ResetTabName()
-    call s:SetTabVar(0, 'taboo_tab_name', "")
+    call s:SetTabVar(tabpagenr(), 'taboo_tab_name', "")
     call s:refresh_tabline()
 endfunction
 " }}}
@@ -302,12 +302,7 @@ endfunction
 " Backwards compatibility function, settabvar not implemented until 7.2.438
 " Use tab number prefixed global vars instead of tab vars
 function! s:SetTabVar(tab_number, variable_name, value)
-    if a:tab_number ==? 0
-        let tabnr = tabpagenr()
-    else
-        let tabnr = a:tab_number
-    endif
-    let tvar = "t_".tabnr."_".a:variable_name
+    let tvar = "t_".a:tab_number."_".a:variable_name
     execute "let g:".tvar." = a:value"
 endfunction
 " }}}
