@@ -6,7 +6,7 @@ their appearance.
 
 ### Requirements
 
-* Vim 7.3+
+* Vim 7.2+
 
 
 ### Installation

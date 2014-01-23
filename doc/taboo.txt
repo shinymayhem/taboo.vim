@@ -1,6 +1,6 @@
 *taboo.txt* *taboo*
 
-                                 Taboo v1.4
+                                 Taboo v1.5
                                      ~
                               Reference Manual
 
