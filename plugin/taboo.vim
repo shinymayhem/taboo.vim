@@ -307,7 +307,7 @@ function! s:SetTabVar(tab_number, variable_name, value)
             call settabwinvar(a:tab_number, win_number, a:variable_name, a:value)
         endfor
     else
-        settabvar(a:tab_number, a:variable_name, a:value)
+        call settabvar(a:tab_number, a:variable_name, a:value)
     endif
 endfunction
 " }}}
