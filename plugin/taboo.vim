@@ -300,20 +300,43 @@ endfunction
 
 " set tab variable ------------------------------ {{{
 " Backwards compatibility function, settabvar not implemented until 7.2.438
-" Use tab number prefixed global vars instead of tab vars
+" 7.2: Set the tab variable in each window in the tab
 function! s:SetTabVar(tab_number, variable_name, value)
-    let tvar = "t_".a:tab_number."_".a:variable_name
-    execute "let g:".tvar." = a:value"
+    if v:version < 703
+        for win_number in range(1, tabpagewinnr(a:tab_number, '$'))
+            call settabwinvar(a:tab_number, win_number, a:variable_name, a:value)
+        endfor
+    else
+        settabvar(a:tab_number, a:variable_name, a:value)
+    endif
 endfunction
 " }}}
 
 " get tab variable ------------------------------ {{{
 " Backwards compatibility function
-" Use tab number prefixed global vars instead of tab vars
+" 7.2: Each window in a tab should have the pseudo tab variable requested
 function! s:GetTabVar(tab_number, variable_name)
-    let tvar = "t_".a:tab_number."_".a:variable_name
-    let var = get(g:, tvar, "")
-    return var
+    if v:version < 703
+        for win_number in range(1, tabpagewinnr(a:tab_number, '$'))
+            "return the first instance of the variable found
+            let var = gettabwinvar(a:tab_number, win_number, a:variable_name)
+            if !empty(var)
+                return var
+            endif
+        endfor
+        return ""
+    else
+        return gettabvar(a:tab_number, a:variable_name)
+    endif
+endfunction
+" }}}
+
+
+" sync tab name --------------------------------- {{{
+" Make sure all windows in the tab have the taboo_tab_name pseudo tab variable
+function! s:SyncTabName()
+    let tab_number = tabpagenr()
+    call s:SetTabVar(tab_number, 'taboo_tab_name', s:GetTabVar(tab_number, 'taboo_tab_name'))
 endfunction
 " }}}
 
@@ -333,6 +356,7 @@ augroup taboo
     au!
     au SessionLoadPost * call s:restore_tabs()
     au TabLeave,TabEnter * call s:refresh_tabline()
+    au BufCreate,BufLeave,BufEnter,WinLeave,WinEnter  * if v:version<703 | call s:SyncTabName() | endif
     au VimEnter * set tabline=%!TabooTabline()
     au VimEnter * if has('gui_running')|set guitablabel=%!TabooGuiLabel()|endif
 augroup END
